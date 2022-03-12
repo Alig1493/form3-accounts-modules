@@ -45,38 +45,38 @@ func getClientRequest(request *http.Request) (*http.Response, error) {
 func (*account) Create(accountData *models.Data) (*models.Data, error) {
 	postUrl := accountsUrl + "/v1/organisation/accounts"
 	var buffer bytes.Buffer
-	encoding_error := json.NewEncoder(&buffer).Encode(accountData)
-	if encoding_error != nil {
-		log.Fatalf("Failed adding a new account: %v", encoding_error)
-		return nil, encoding_error
+	encodingError := json.NewEncoder(&buffer).Encode(accountData)
+	if encodingError != nil {
+		log.Fatalf("Failed adding a new account: %v", encodingError)
+		return nil, encodingError
 	}
 
-	request, request_error := http.NewRequest("POST", postUrl, &buffer)
+	request, requestError := http.NewRequest("POST", postUrl, &buffer)
 	request.Header.Set("Content-Type", "application/vnd.api+json")
-	if request_error != nil {
-		log.Fatalf("Failed to get a new request: %v", request_error)
-		return nil, request_error
+	if requestError != nil {
+		log.Fatalf("Failed to get a new request: %v", requestError)
+		return nil, requestError
 	}
 
 	client := &http.Client{}
-	response, repsonse_error := client.Do(request)
-	if repsonse_error != nil {
-		log.Fatalf("Failed to get a response: %v", repsonse_error)
-		return nil, request_error
+	response, repsonseError := client.Do(request)
+	if repsonseError != nil {
+		log.Fatalf("Failed to get a response: %v", repsonseError)
+		return nil, repsonseError
 	}
 	defer response.Body.Close()
 
 	log.Println("response Status:", response.StatusCode)
 	log.Println("response Headers:", response.Header)
-	body_data, body_read_error := ioutil.ReadAll(response.Body)
-	if body_read_error != nil {
-		log.Fatalf("Failed to read the response body: %v", body_data)
-		return nil, body_read_error
+	bodyData, bodyReadError := ioutil.ReadAll(response.Body)
+	if bodyReadError != nil {
+		log.Fatalf("Failed to read the response body: %v", bodyReadError)
+		return nil, bodyReadError
 	}
-	log.Println("response Body:", string(body_data))
+	log.Println("response Body:", string(bodyData))
 
 	if response.StatusCode != 201 {
-		return nil, errors.New(string(body_data))
+		return nil, errors.New(string(bodyData))
 	}
 	return accountData, nil
 }
@@ -84,21 +84,21 @@ func (*account) Create(accountData *models.Data) (*models.Data, error) {
 func (*account) Fetch(accountId string) (*models.Data, error) {
 	fetchUrl := accountsUrl + "/v1/organisation/accounts/" + accountId
 	var (
-		error_data   models.ErrorData
-		account_data models.Data
+		errorData   models.ErrorData
+		accountData models.Data
 	)
 
-	request, request_error := http.NewRequest("GET", fetchUrl, nil)
+	request, requestError := http.NewRequest("GET", fetchUrl, nil)
 	request.Header.Add("Accept", "application/vnd.api+json")
-	if request_error != nil {
-		log.Fatalf("Failed to get a new request: %v", request_error)
-		return nil, request_error
+	if requestError != nil {
+		log.Fatalf("Failed to get a new request: %v", requestError)
+		return nil, requestError
 	}
 	client := &http.Client{}
-	response, repsonse_error := client.Do(request)
-	if repsonse_error != nil {
-		log.Fatalf("Failed to get a response: %v", repsonse_error)
-		return nil, request_error
+	response, repsonseError := client.Do(request)
+	if repsonseError != nil {
+		log.Fatalf("Failed to get a response: %v", repsonseError)
+		return nil, repsonseError
 	}
 	defer response.Body.Close()
 
@@ -112,53 +112,53 @@ func (*account) Fetch(accountId string) (*models.Data, error) {
 	}
 	log.Println("response Body:", string(body_data))
 	if response.StatusCode != 200 {
-		json.Unmarshal(body_data, &error_data)
-		return nil, errors.New(error_data.ErrorMessage)
+		json.Unmarshal(body_data, &errorData)
+		return nil, errors.New(errorData.ErrorMessage)
 	}
 
-	body_data_unmarshal_error := json.Unmarshal(body_data, &account_data)
+	body_data_unmarshal_error := json.Unmarshal(body_data, &accountData)
 	if body_data_unmarshal_error != nil {
 		log.Fatalf("Failed to unmarshal body data: %v", body_data_unmarshal_error)
 		return nil, body_data_unmarshal_error
 	}
-	return &account_data, nil
+	return &accountData, nil
 }
 
 func (*account) Delete(accountId string) error {
 	deleteUrl := accountsUrl + "/v1/organisation/accounts/" + accountId
 	log.Printf("Accounts version: %v", accountsVersion)
-	var error_data models.ErrorData
-	request, request_error := http.NewRequest("DELETE", deleteUrl, nil)
+	var errorData models.ErrorData
+	request, requestError := http.NewRequest("DELETE", deleteUrl, nil)
 	request.Header.Add("Accept", "application/vnd.api+json")
 	query := request.URL.Query()
 	query.Add("version", accountsVersion)
 	request.URL.RawQuery = query.Encode()
 	log.Println(request.URL.String())
-	if request_error != nil {
-		log.Fatalf("Failed to get a new request: %v", request_error)
-		return request_error
+	if requestError != nil {
+		log.Fatalf("Failed to get a new request: %v", requestError)
+		return requestError
 	}
 	client := &http.Client{}
-	response, repsonse_error := client.Do(request)
-	if repsonse_error != nil {
-		log.Fatalf("Failed to get a response: %v", repsonse_error)
-		return request_error
+	response, repsonseError := client.Do(request)
+	if repsonseError != nil {
+		log.Fatalf("Failed to get a response: %v", repsonseError)
+		return repsonseError
 	}
 	defer response.Body.Close()
 
 	log.Println("response Status:", response.StatusCode)
 	log.Println("response Headers:", response.Header)
 
-	body_data, body_error := ioutil.ReadAll(response.Body)
-	if body_error != nil {
-		log.Fatalf("Failed to read the response body: %v", body_data)
-		return body_error
+	bodyData, bodyError := ioutil.ReadAll(response.Body)
+	if bodyError != nil {
+		log.Fatalf("Failed to read the response body: %v", bodyError)
+		return bodyError
 	}
-	log.Println("response Body:", string(body_data))
+	log.Println("response Body:", string(bodyData))
 
 	if response.StatusCode != 204 {
-		json.Unmarshal(body_data, &error_data)
-		return errors.New(error_data.ErrorMessage)
+		json.Unmarshal(bodyData, &errorData)
+		return errors.New(errorData.ErrorMessage)
 	}
 	return nil
 }
