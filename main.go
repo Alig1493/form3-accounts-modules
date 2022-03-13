@@ -4,21 +4,23 @@ import (
 	"log"
 
 	"github.com/Alig1493/from3-accounts-modules/models"
+	"github.com/Alig1493/from3-accounts-modules/repositories"
 	"github.com/Alig1493/from3-accounts-modules/services"
 	"github.com/google/uuid"
 )
 
 var (
-	service        = services.NewAccountService()
-	userId         = uuid.NewString()
-	organizationId = uuid.NewString()
+	accountRepository = repositories.NewAccountRepository()
+	service           = services.NewAccountService(accountRepository)
+	userId            = uuid.NewString()
+	organizationId    = uuid.NewString()
 )
 
 func displayResponse(accountData *models.Data, responseError error) {
 	if responseError != nil {
 		log.Fatalf("Response error: %v", &models.ErrorData{ErrorMessage: responseError.Error()})
 	} else {
-		log.Printf("Successful response for data: %v", accountData)
+		log.Printf("Successful response for data: %+v", *accountData)
 	}
 }
 

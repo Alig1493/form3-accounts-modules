@@ -17,4 +17,4 @@ RUN go mod download
 # Copy the source from the current directory to the Working Directory inside the container
 COPY . .
 
-CMD CGO_ENABLED=0 go test ./...
+CMD CGO_ENABLED=0 go test ./... -v

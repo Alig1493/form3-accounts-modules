@@ -7,7 +7,6 @@ services:
       - .:/app
     depends_on:
       - accountapi
-    command: go run .
     ports:
       - 8002:8002
     environment:
