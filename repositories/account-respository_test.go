@@ -6,6 +6,7 @@ import (
 
 	"github.com/Alig1493/from3-accounts-modules/models"
 	"github.com/Alig1493/from3-accounts-modules/utils"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,4 +46,29 @@ func TestFakeApiDelete(t *testing.T) {
 	responseData, responseError := testAccountRepository.Delete(deleteUrl, utils.GetVersion(), *&data.Data.ID)
 	assert.Nil(t, responseError)
 	assert.EqualValues(t, responseData, &models.ResponseData{Response: nil, StatusCode: 204})
+}
+
+func TestFakeAPINonExistingDataFetch(t *testing.T) {
+	randomUUID := uuid.NewString()
+	errorMessage := "record " + randomUUID + " does not exist"
+	fetchUrl := utils.GetUrl() + "/v1/organisation/accounts/" + randomUUID
+	responseData, responseError := testAccountRepository.Fetch(fetchUrl, randomUUID)
+	assert.EqualError(t, responseError, errorMessage)
+	assert.Nil(t, responseData)
+}
+
+func TestFakeAPINonExistingDataDelete(t *testing.T) {
+	randomUUID := uuid.NewString()
+	errorMessage := "record " + randomUUID + " does not exist"
+	fetchUrl := utils.GetUrl() + "/v1/organisation/accounts/" + randomUUID
+	responseData, responseError := testAccountRepository.Fetch(fetchUrl, randomUUID)
+	assert.EqualError(t, responseError, errorMessage)
+	assert.Nil(t, responseData)
+}
+
+func TestFakeAPICreateWithEmptyData(t *testing.T) {
+	postUrl := utils.GetUrl() + "/v1/organisation/accounts"
+	responseData, responseError := testAccountRepository.Create(postUrl, &models.Data{})
+	assert.Nil(t, responseData)
+	assert.EqualError(t, responseError, "invalid account data")
 }

@@ -36,7 +36,10 @@ func getClientRequest(request *http.Request) (*http.Response, error) {
 }
 
 func (*repository) Create(url string, accountData *models.Data) (*models.ResponseData, error) {
-	var buffer bytes.Buffer
+	var (
+		buffer    bytes.Buffer
+		errorData models.ErrorData
+	)
 	encodingError := json.NewEncoder(&buffer).Encode(accountData)
 	if encodingError != nil {
 		log.Fatalf("Failed adding a new account: %v", encodingError)
@@ -68,7 +71,8 @@ func (*repository) Create(url string, accountData *models.Data) (*models.Respons
 	log.Println("response Body:", string(bodyData))
 
 	if response.StatusCode != 201 {
-		return nil, errors.New(string(bodyData))
+		json.Unmarshal(bodyData, &errorData)
+		return nil, errors.New(errorData.ErrorMessage)
 	}
 	return &models.ResponseData{Response: accountData, StatusCode: response.StatusCode}, nil
 }
@@ -96,21 +100,21 @@ func (*repository) Fetch(url string, accountId string) (*models.ResponseData, er
 	log.Println("response Status:", response.StatusCode)
 	log.Println("response Headers:", response.Header)
 
-	body_data, body_error := ioutil.ReadAll(response.Body)
-	if body_error != nil {
-		log.Fatalf("Failed to read the response body: %v", body_data)
-		return nil, body_error
+	bodyData, bodyError := ioutil.ReadAll(response.Body)
+	if bodyError != nil {
+		log.Fatalf("Failed to read the response body: %v", bodyData)
+		return nil, bodyError
 	}
-	log.Println("response Body:", string(body_data))
+	log.Println("response Body:", string(bodyData))
 	if response.StatusCode != 200 {
-		json.Unmarshal(body_data, &errorData)
+		json.Unmarshal(bodyData, &errorData)
 		return nil, errors.New(errorData.ErrorMessage)
 	}
 
-	body_data_unmarshal_error := json.Unmarshal(body_data, &accountData)
-	if body_data_unmarshal_error != nil {
-		log.Fatalf("Failed to unmarshal body data: %v", body_data_unmarshal_error)
-		return nil, body_data_unmarshal_error
+	bodyDataUnmarshalError := json.Unmarshal(bodyData, &accountData)
+	if bodyDataUnmarshalError != nil {
+		log.Fatalf("Failed to unmarshal body data: %v", bodyDataUnmarshalError)
+		return nil, bodyDataUnmarshalError
 	}
 	return &models.ResponseData{Response: &accountData, StatusCode: response.StatusCode}, nil
 }

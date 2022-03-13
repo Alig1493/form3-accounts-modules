@@ -1,4 +1,5 @@
 FROM golang:1.16-alpine
+ENV CGO_ENABLED=0
 
 # The latest alpine images don't have some tools like (`git` and `bash`).
 # Adding git, bash and openssh to the image
@@ -13,8 +14,7 @@ COPY go.mod go.sum ./
 
 # Download all dependancies. Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go mod download
-
 # Copy the source from the current directory to the Working Directory inside the container
 COPY . .
-
-CMD CGO_ENABLED=0 go test ./... -v
+RUN ls -la
+RUN go build .
