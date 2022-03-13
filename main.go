@@ -16,12 +16,13 @@ var (
 	organizationId    = uuid.NewString()
 )
 
-func displayResponse(accountData *models.Data, responseError error) {
+func displayResponse(responseData *models.ResponseData, responseError error) {
 	if responseError != nil {
 		log.Fatalf("Response error: %v", &models.ErrorData{ErrorMessage: responseError.Error()})
 	} else {
-		log.Printf("Successful response for data: %+v", *accountData)
+		log.Printf("Successful response for data: %+v", *responseData)
 	}
+	log.Printf("Status code: %v", responseData.StatusCode)
 }
 
 func sampleCreate() {
@@ -81,10 +82,7 @@ func sampleFetch() {
 }
 
 func sampleDelete() {
-	responseError := service.Delete(userId)
-	if responseError != nil {
-		log.Fatalf("Response error: %v", &models.ErrorData{ErrorMessage: responseError.Error()})
-	}
+	displayResponse(service.Delete(userId))
 }
 
 func main() {

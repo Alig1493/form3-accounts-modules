@@ -14,9 +14,9 @@ import (
 type repository struct{}
 
 type AccountRepository interface {
-	Create(url string, accountData *models.Data) (*models.Data, error)
-	Fetch(url string, accountId string) (*models.Data, error)
-	Delete(url string, version string, accountId string) error
+	Create(url string, accountData *models.Data) (*models.ResponseData, error)
+	Fetch(url string, accountId string) (*models.ResponseData, error)
+	Delete(url string, version string, accountId string) (*models.ResponseData, error)
 }
 
 func NewAccountRepository() AccountRepository {
@@ -35,7 +35,7 @@ func getClientRequest(request *http.Request) (*http.Response, error) {
 	return response, repsonse_error
 }
 
-func (*repository) Create(url string, accountData *models.Data) (*models.Data, error) {
+func (*repository) Create(url string, accountData *models.Data) (*models.ResponseData, error) {
 	var buffer bytes.Buffer
 	encodingError := json.NewEncoder(&buffer).Encode(accountData)
 	if encodingError != nil {
@@ -70,10 +70,10 @@ func (*repository) Create(url string, accountData *models.Data) (*models.Data, e
 	if response.StatusCode != 201 {
 		return nil, errors.New(string(bodyData))
 	}
-	return accountData, nil
+	return &models.ResponseData{Response: accountData, StatusCode: response.StatusCode}, nil
 }
 
-func (*repository) Fetch(url string, accountId string) (*models.Data, error) {
+func (*repository) Fetch(url string, accountId string) (*models.ResponseData, error) {
 	var (
 		errorData   models.ErrorData
 		accountData models.Data
@@ -112,10 +112,10 @@ func (*repository) Fetch(url string, accountId string) (*models.Data, error) {
 		log.Fatalf("Failed to unmarshal body data: %v", body_data_unmarshal_error)
 		return nil, body_data_unmarshal_error
 	}
-	return &accountData, nil
+	return &models.ResponseData{Response: &accountData, StatusCode: response.StatusCode}, nil
 }
 
-func (*repository) Delete(url string, version string, accountId string) error {
+func (*repository) Delete(url string, version string, accountId string) (*models.ResponseData, error) {
 	var errorData models.ErrorData
 	request, requestError := http.NewRequest("DELETE", url, nil)
 	request.Header.Add("Accept", "application/vnd.api+json")
@@ -125,13 +125,13 @@ func (*repository) Delete(url string, version string, accountId string) error {
 	log.Println(request.URL.String())
 	if requestError != nil {
 		log.Fatalf("Failed to get a new request: %v", requestError)
-		return requestError
+		return nil, requestError
 	}
 	client := &http.Client{}
 	response, repsonseError := client.Do(request)
 	if repsonseError != nil {
 		log.Fatalf("Failed to get a response: %v", repsonseError)
-		return repsonseError
+		return nil, repsonseError
 	}
 	defer response.Body.Close()
 
@@ -141,13 +141,13 @@ func (*repository) Delete(url string, version string, accountId string) error {
 	bodyData, bodyError := ioutil.ReadAll(response.Body)
 	if bodyError != nil {
 		log.Fatalf("Failed to read the response body: %v", bodyError)
-		return bodyError
+		return nil, bodyError
 	}
 	log.Println("response Body:", string(bodyData))
 
 	if response.StatusCode != 204 {
 		json.Unmarshal(bodyData, &errorData)
-		return errors.New(errorData.ErrorMessage)
+		return nil, errors.New(errorData.ErrorMessage)
 	}
-	return nil
+	return &models.ResponseData{Response: nil, StatusCode: response.StatusCode}, nil
 }

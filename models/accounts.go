@@ -7,6 +7,11 @@ type ErrorData struct {
 	ErrorMessage string `json:"error_message,omitempty"`
 }
 
+type ResponseData struct {
+	Response   *Data
+	StatusCode int
+}
+
 type Data struct {
 	Data *AccountData `json:"data,omitempty"`
 }

@@ -15,9 +15,9 @@ var (
 
 type AccountService interface {
 	// implement the Create, Fetch, and Delete operations on the accounts resource.
-	Create(accountData *models.Data) (*models.Data, error)
-	Fetch(accountId string) (*models.Data, error)
-	Delete(accountId string) error
+	Create(accountData *models.Data) (*models.ResponseData, error)
+	Fetch(accountId string) (*models.ResponseData, error)
+	Delete(accountId string) (*models.ResponseData, error)
 }
 
 type account struct{}
@@ -27,17 +27,17 @@ func NewAccountService(repository repositories.AccountRepository) AccountService
 	return &account{}
 }
 
-func (*account) Create(accountData *models.Data) (*models.Data, error) {
+func (*account) Create(accountData *models.Data) (*models.ResponseData, error) {
 	postUrl := accountsUrl + "/v1/organisation/accounts"
 	return accountRepository.Create(postUrl, accountData)
 }
 
-func (*account) Fetch(accountId string) (*models.Data, error) {
+func (*account) Fetch(accountId string) (*models.ResponseData, error) {
 	fetchUrl := accountsUrl + "/v1/organisation/accounts/" + accountId
 	return accountRepository.Fetch(fetchUrl, accountId)
 }
 
-func (*account) Delete(accountId string) error {
+func (*account) Delete(accountId string) (*models.ResponseData, error) {
 	deleteUrl := accountsUrl + "/v1/organisation/accounts/" + accountId
 	return accountRepository.Delete(deleteUrl, accountsVersion, accountId)
 }
