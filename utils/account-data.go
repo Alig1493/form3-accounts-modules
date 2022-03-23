@@ -21,7 +21,7 @@ func GetData(newUUID bool) models.Data {
 
 	versionInt, conversionError := strconv.ParseInt(GetVersion(), 10, 64)
 	if conversionError != nil {
-		log.Fatalf("Error converting string to int64")
+		log.Println("Error converting string to int64")
 	}
 	userId := id
 	organizationId := id

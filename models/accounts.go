@@ -5,6 +5,7 @@ package models
 // more information about fields.
 type ErrorData struct {
 	ErrorMessage string `json:"error_message,omitempty"`
+	StatusCode   int    `json:"status_code,omitempty"`
 }
 
 type ResponseData struct {

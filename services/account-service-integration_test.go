@@ -1,6 +1,7 @@
-package repositories
+package services
 
 import (
+	"net/http"
 	"sync"
 	"testing"
 
@@ -11,9 +12,9 @@ import (
 )
 
 var (
-	accountData           *models.Data
-	testAccountRepository = NewAccountRepository()
-	once                  sync.Once
+	accountData        *models.Data
+	testAccountService = NewAccountService()
+	once               sync.Once
 )
 
 func getAccountData() *models.Data {
@@ -26,24 +27,21 @@ func getAccountData() *models.Data {
 
 func TestFakeApiCreate(t *testing.T) {
 	data := getAccountData()
-	postUrl := utils.GetUrl() + "/v1/organisation/accounts"
-	responseData, responseError := testAccountRepository.Create(postUrl, data)
+	responseData, responseError := testAccountService.Create(data)
 	assert.Nil(t, responseError, responseError)
 	assert.EqualValues(t, responseData, &models.ResponseData{Response: data, StatusCode: 201})
 }
 
 func TestFakeApiFetch(t *testing.T) {
 	data := getAccountData()
-	fetchUrl := utils.GetUrl() + "/v1/organisation/accounts/" + *&data.Data.ID
-	responseData, responseError := testAccountRepository.Fetch(fetchUrl, *&data.Data.ID)
+	responseData, responseError := testAccountService.Fetch(*&data.Data.ID)
 	assert.Nil(t, responseError)
 	assert.EqualValues(t, responseData, &models.ResponseData{Response: data, StatusCode: 200})
 }
 
 func TestFakeApiDelete(t *testing.T) {
 	data := getAccountData()
-	deleteUrl := utils.GetUrl() + "/v1/organisation/accounts/" + *&data.Data.ID
-	responseData, responseError := testAccountRepository.Delete(deleteUrl, utils.GetVersion(), *&data.Data.ID)
+	responseData, responseError := testAccountService.Delete(*&data.Data.ID)
 	assert.Nil(t, responseError)
 	assert.EqualValues(t, responseData, &models.ResponseData{Response: nil, StatusCode: 204})
 }
@@ -51,24 +49,22 @@ func TestFakeApiDelete(t *testing.T) {
 func TestFakeAPINonExistingDataFetch(t *testing.T) {
 	randomUUID := uuid.NewString()
 	errorMessage := "record " + randomUUID + " does not exist"
-	fetchUrl := utils.GetUrl() + "/v1/organisation/accounts/" + randomUUID
-	responseData, responseError := testAccountRepository.Fetch(fetchUrl, randomUUID)
-	assert.EqualError(t, responseError, errorMessage)
+	responseData, responseError := testAccountService.Fetch(randomUUID)
+	assert.ObjectsAreEqual(responseError, &models.ErrorData{ErrorMessage: errorMessage, StatusCode: http.StatusBadRequest})
 	assert.Nil(t, responseData)
 }
 
 func TestFakeAPINonExistingDataDelete(t *testing.T) {
 	randomUUID := uuid.NewString()
 	errorMessage := "record " + randomUUID + " does not exist"
-	fetchUrl := utils.GetUrl() + "/v1/organisation/accounts/" + randomUUID
-	responseData, responseError := testAccountRepository.Fetch(fetchUrl, randomUUID)
-	assert.EqualError(t, responseError, errorMessage)
+	responseData, responseError := testAccountService.Fetch(randomUUID)
+	assert.ObjectsAreEqual(responseError, &models.ErrorData{ErrorMessage: errorMessage, StatusCode: http.StatusBadRequest})
 	assert.Nil(t, responseData)
 }
 
 func TestFakeAPICreateWithEmptyData(t *testing.T) {
-	postUrl := utils.GetUrl() + "/v1/organisation/accounts"
-	responseData, responseError := testAccountRepository.Create(postUrl, &models.Data{})
+	responseData, responseError := testAccountService.Create(&models.Data{})
 	assert.Nil(t, responseData)
-	assert.EqualError(t, responseError, "invalid account data")
+	errorMessage := "invalid account data"
+	assert.ObjectsAreEqual(responseError, &models.ErrorData{ErrorMessage: errorMessage, StatusCode: http.StatusBadRequest})
 }
